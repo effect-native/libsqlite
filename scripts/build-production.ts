@@ -49,6 +49,32 @@ const PLATFORM_TARGETS: ReadonlyArray<PlatformTarget> = [
   }
 ];
 
+const setupUniversalBuild = Effect.gen(function* () {
+  yield* Console.log("⚙️  Setting up universal build environment...")
+  
+  // Enable extra platforms for cross-compilation
+  const platforms = PLATFORM_TARGETS.map(t => t.nixSystem).join(" ")
+  
+  yield* Console.log("🌍 Enabling cross-platform builds...")
+  yield* Command.make("nix", "build", "--version").pipe(
+    Command.exitCode,
+    Effect.mapError(() => "Nix not available")
+  )
+  
+  // Check if we have remote builders configured
+  const hasRemoteBuilders = yield* Command.make("nix", "show-config").pipe(
+    Command.string,
+    Effect.map(config => config.includes("builders")),
+    Effect.catchAll(() => Effect.succeed(false))
+  )
+  
+  if (hasRemoteBuilders) {
+    yield* Console.log("🏗️  Remote builders detected - will use for missing platforms")
+  } else {
+    yield* Console.log("⚡ No remote builders - will try binary cache substitution")
+  }
+})
+
 const cleanBuildDir = Effect.gen(function* () {
   yield* Console.log("🧹 Cleaning build directory...")
   const fs = yield* FileSystem.FileSystem
@@ -66,15 +92,42 @@ const cleanBuildDir = Effect.gen(function* () {
 const buildPlatformLibrary = (target: PlatformTarget) => Effect.gen(function* () {
   yield* Console.log(`📦 Building ${target.description} (${target.nixSystem})...`)
   
-  // Try to build for this platform
-  const buildResult = yield* Command.make("nix", "build", `--system`, target.nixSystem, ".#libsqlite3", "--no-link").pipe(
+  // Try to build for this platform with more aggressive options
+  const buildResult = yield* Command.make(
+    "nix", 
+    "build", 
+    `--system`, target.nixSystem,
+    "--extra-platforms", target.nixSystem, // Allow building for this platform
+    "--builders-use-substitutes", "true",   // Use binary cache if available
+    ".#libsqlite3", 
+    "--no-link"
+  ).pipe(
     Command.exitCode,
     Effect.mapError(() => `Failed to build for ${target.nixSystem}`)
   )
   
   if (buildResult !== 0) {
-    yield* Console.log(`⚠️  Skipping ${target.nixSystem} - not available on this system`)
-    return null
+    // Try one more time with fallback to binary cache
+    yield* Console.log(`⚡ Trying binary cache for ${target.nixSystem}...`)
+    
+    const fallbackResult = yield* Command.make(
+      "nix", 
+      "build", 
+      `--system`, target.nixSystem,
+      "--option", "builders", "@/etc/nix/machines",  // Use remote builders if configured
+      "--option", "max-jobs", "0",                   // Only use remote builders
+      "--fallback",                                  // Fall back to building if needed
+      ".#libsqlite3", 
+      "--no-link"
+    ).pipe(
+      Command.exitCode,
+      Effect.catchAll(() => Effect.succeed(1)) // Don't fail the whole build
+    )
+    
+    if (fallbackResult !== 0) {
+      yield* Console.log(`❌ Failed to build ${target.nixSystem} - will be missing from package`)
+      return null
+    }
   }
   
   // Get the store path
@@ -118,14 +171,32 @@ const buildPlatformLibrary = (target: PlatformTarget) => Effect.gen(function* ()
 })
 
 const buildAllLibraries = Effect.gen(function* () {
-  yield* Console.log("🔨 Building SQLite libraries for all platforms...")
+  yield* Console.log("🔨 Building SQLite libraries for ALL platforms...")
+  yield* Console.log("🎯 Target: Universal package that Just Works™ everywhere")
   
-  // Build libraries for all platforms in parallel
-  const results = yield* Effect.allSuccesses(
-    Arr.map(PLATFORM_TARGETS, buildPlatformLibrary)
+  // Build libraries for all platforms - try to get ALL of them
+  const results = yield* Effect.all(
+    Arr.map(PLATFORM_TARGETS, buildPlatformLibrary),
+    { concurrency: 2 } // Build 2 at a time to avoid overwhelming the system
   )
   
   const successfulBuilds = results.filter(Boolean)
+  const failedBuilds = PLATFORM_TARGETS.length - successfulBuilds.length
+  
+  if (failedBuilds > 0) {
+    yield* Console.log(`⚠️  Missing ${failedBuilds} platforms - package won't be truly universal`)
+    yield* Console.log(`💡 Consider setting up Nix remote builders for missing platforms`)
+    
+    // List what's missing
+    const builtPlatforms = successfulBuilds.map(b => b.target.nixSystem)
+    const missingPlatforms = PLATFORM_TARGETS
+      .filter(t => !builtPlatforms.includes(t.nixSystem))
+      .map(t => `${t.nixSystem} (${t.description})`)
+    
+    yield* Console.log(`❌ Missing: ${missingPlatforms.join(', ')}`)
+  } else {
+    yield* Console.log(`🎉 SUCCESS: Built ALL ${PLATFORM_TARGETS.length} platforms - truly universal!`)
+  }
   
   yield* Console.log(`✨ Built ${successfulBuilds.length}/${PLATFORM_TARGETS.length} platform libraries`)
   
@@ -149,6 +220,22 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
  * @returns {string} Absolute path to libsqlite3.dylib/.so
  */
 export function getLibraryPath() {
+  // React Native check - return null (noop)
+  if (typeof navigator !== 'undefined' && navigator.product === 'ReactNative') {
+    throw new Error(
+      '@effect-native/libsqlite is for Node.js environments only. ' +
+      'For React Native, use react-native-sqlite-storage or expo-sqlite instead.'
+    );
+  }
+  
+  // Browser check - also noop
+  if (typeof window !== 'undefined') {
+    throw new Error(
+      '@effect-native/libsqlite is for Node.js environments only. ' +
+      'For browsers, use sql.js or a server-side database API.'
+    );
+  }
+  
   // Detect current platform and architecture
   const platform = process.platform === 'darwin' ? 'darwin' : 'linux';
   const arch = process.arch === 'arm64' ? 'aarch64' : 'x86_64';
@@ -308,15 +395,27 @@ const generateBuildSummary = (builtLibraries: Array<any>) => Effect.gen(function
 })
 
 const main = Effect.gen(function* () {
-  yield* Console.log("🚀 Building production package for @effect-native/libsqlite")
+  yield* Console.log("🚀 Building UNIVERSAL production package for @effect-native/libsqlite")
+  yield* Console.log("🎯 Goal: Just Works™ everywhere - Mac, Linux, Pi, Docker, Vercel, etc.")
   
+  yield* setupUniversalBuild
   yield* cleanBuildDir
   const builtLibraries = yield* buildAllLibraries
+  
+  if (builtLibraries.length < PLATFORM_TARGETS.length) {
+    yield* Console.log("⚠️  WARNING: Not all platforms built - package won't be truly universal")
+  }
+  
   yield* generateOptimizedIndex(builtLibraries)
   yield* generateOptimizedBin  
   yield* generateProductionPackageJson
   yield* copyStaticFiles
   yield* generateBuildSummary(builtLibraries)
+  
+  if (builtLibraries.length === PLATFORM_TARGETS.length) {
+    yield* Console.log("🎉 SUCCESS: Created truly UNIVERSAL package!")
+    yield* Console.log("✅ Works on Mac, Linux, Pi, Docker, Vercel - everywhere!")
+  }
 })
 
 // Run when called directly
