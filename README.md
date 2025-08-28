@@ -31,14 +31,9 @@ npm install @effect-native/libsqlite
 import { pathToSQLite } from '@effect-native/libsqlite'
 Database.setCustomSQLite(pathToSQLite)  // Just Works™ on any platform
 
-// Function API
-import { getLibraryPath } from '@effect-native/libsqlite'
-const lib = getLibraryPath()  // Automatically detects Mac/Linux/ARM/Intel
-Database.setCustomSQLite(lib)
-
-// Default export
-import getPath from '@effect-native/libsqlite'
-Database.setCustomSQLite(getPath())
+// Default export - same thing
+import libPath from '@effect-native/libsqlite'
+Database.setCustomSQLite(libPath)  // Also Just Works™
 ```
 
 ### ✨ What makes it special:
@@ -46,7 +41,19 @@ Database.setCustomSQLite(getPath())
 - **Insanely fast** - Pre-built binaries, no compilation needed  
 - **Tiny API** - Just import and use, platform detection is automatic
 - **Extension ready** - Built with extension loading enabled (unlike system SQLite)
-- **React Native safe** - Throws helpful error if imported in RN
+- **React Native aware** - Dedicated exports with helpful error messages
+
+### 📱 React Native Support
+
+React Native automatically gets a dedicated entry point with helpful error messages:
+
+```js
+// In React Native, this import automatically resolves to react-native.js
+import { pathToSQLite } from '@effect-native/libsqlite'
+// ❌ Throws: "Use expo-sqlite or react-native-sqlite-storage instead"
+```
+
+The package uses conditional exports so React Native bundlers automatically get the RN-specific version with helpful guidance to use proper React Native SQLite libraries.
 
 ## Direct Nix Usage
 
