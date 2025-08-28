@@ -35,13 +35,8 @@ function updatePackageVersion(sqliteVersion) {
   try {
     const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf8'));
     
-    // Keep any pre-release suffix from current version
-    const currentVersion = packageJson.version;
-    const preReleaseSuffix = currentVersion.includes('-') 
-      ? '-' + currentVersion.split('-').slice(1).join('-')
-      : '';
-    
-    const newVersion = sqliteVersion + preReleaseSuffix;
+    // Use SQLite version directly (latest stable only)
+    const newVersion = sqliteVersion;
     
     if (packageJson.version === newVersion) {
       console.log(`✅ Version already up-to-date: ${newVersion}`);

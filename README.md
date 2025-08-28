@@ -55,14 +55,14 @@ const lib = execFileSync('nix', ['run', '.#print-path'], { encoding: 'utf8' }).t
 
 ## Automatic Versioning
 
-The package version automatically syncs with the SQLite version from nixpkgs-unstable:
+The package version automatically syncs with the stable SQLite version from nixpkgs-unstable:
 
 ```bash
 npm run sync-version  # Updates package.json to match SQLite version
 nix run .#print-version  # Shows current SQLite version
 ```
 
-Pre-release suffixes are preserved (e.g., `3.50.2-beta.1` stays as `3.50.2-beta.1`).
+The package always tracks the latest stable SQLite release.
 
 ## Gotchas
 - If your host app is hardened on macOS, still ensure entitlements/signing allow loading external dylibs. (This is OS-level, not solved by which SQLite you ship.)
