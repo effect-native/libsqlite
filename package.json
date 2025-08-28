@@ -1,6 +1,6 @@
 {
   "name": "@effect-native/libsqlite",
-  "version": "3.50.3",
+  "version": "3.50.2-1",
   "description": "Pure-Nix libsqlite3 (.dylib/.so) for extension loading",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
