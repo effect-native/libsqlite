@@ -53,43 +53,65 @@
           '';
         };
 
-        # App: builds libraries for all platforms
+        # App: builds libraries for current platform with correct naming
         buildAllPlatforms = pkgs.writeShellApplication {
           name = "build-all-platforms";
           text = ''
             set -euo pipefail
-            echo "🔨 Building SQLite libraries for all platforms..."
+            echo "🔨 Building SQLite library for current platform..."
             
-            platforms=(
-              "x86_64-linux"      # Intel/AMD Linux (Docker, most servers)
-              "aarch64-linux"     # ARM64 Linux (Raspberry Pi 4+, AWS Graviton)
-              "x86_64-darwin"     # Intel Mac
-              "aarch64-darwin"    # Apple Silicon Mac (M1/M2/M3)
-            )
+            # Build for current platform
+            nix build .#libsqlite3
             
             mkdir -p lib
             
-            for platform in "''${platforms[@]}"; do
-              echo "📦 Building for $platform..."
-              if nix build ".#packages.$platform.libsqlite3" --no-link 2>/dev/null; then
-                result=$(nix eval ".#packages.$platform.libsqlite3" --raw)
-                case $platform in
-                  *-linux)
-                    arch=$(echo "$platform" | cut -d- -f1)
-                    cp -v "$result"/lib/libsqlite3.so* "lib/libsqlite3-linux-$arch.so" 2>/dev/null || true
-                    ;;
-                  *-darwin)
-                    arch=$(echo "$platform" | cut -d- -f1)
-                    cp -v "$result"/lib/libsqlite3*.dylib "lib/libsqlite3-darwin-$arch.dylib" 2>/dev/null || true
-                    ;;
-                esac
-              else
-                echo "⚠️  Failed to build for $platform (may not be available)"
-              fi
-            done
+            # Determine current platform and architecture
+            current_system="${system}"
+            case "$current_system" in
+              x86_64-linux)
+                platform="linux"
+                arch="x86_64"
+                ext="so"
+                ;;
+              aarch64-linux) 
+                platform="linux"
+                arch="aarch64"
+                ext="so"
+                ;;
+              x86_64-darwin)
+                platform="darwin"
+                arch="x86_64" 
+                ext="dylib"
+                ;;
+              aarch64-darwin)
+                platform="darwin"
+                arch="aarch64"
+                ext="dylib"
+                ;;
+              *)
+                echo "⚠️  Unsupported platform: $current_system"
+                exit 1
+                ;;
+            esac
             
-            echo "✅ Multi-platform build complete:"
-            ls -la lib/libsqlite3-*
+            # Copy with platform-specific naming
+            echo "📦 Copying library for $platform-$arch..."
+            case "$ext" in
+              so)
+                cp -v result/lib/libsqlite3.so* "lib/libsqlite3-$platform-$arch.so" 2>/dev/null || true
+                # Also copy with generic name for fallback
+                cp -v result/lib/libsqlite3.so* "lib/libsqlite3.so" 2>/dev/null || true
+                ;;
+              dylib)
+                # Copy the actual dylib file, not just symlinks
+                cp -v result/lib/libsqlite3*.dylib "lib/libsqlite3-$platform-$arch.dylib" 2>/dev/null || true
+                # Also copy with generic name for fallback  
+                cp -v result/lib/libsqlite3*.dylib "lib/libsqlite3.dylib" 2>/dev/null || true
+                ;;
+            esac
+            
+            echo "✅ Build complete for $current_system:"
+            ls -la lib/
           '';
         };
 
