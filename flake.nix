@@ -61,10 +61,10 @@
             echo "🔨 Building SQLite libraries for all platforms..."
             
             platforms=(
-              "x86_64-linux"
-              "aarch64-linux" 
-              "x86_64-darwin"
-              "aarch64-darwin"
+              "x86_64-linux"      # Intel/AMD Linux (Docker, most servers)
+              "aarch64-linux"     # ARM64 Linux (Raspberry Pi 4+, AWS Graviton)
+              "x86_64-darwin"     # Intel Mac
+              "aarch64-darwin"    # Apple Silicon Mac (M1/M2/M3)
             )
             
             mkdir -p lib
@@ -75,11 +75,11 @@
                 result=$(nix eval ".#packages.$platform.libsqlite3" --raw)
                 case $platform in
                   *-linux)
-                    arch=$(echo $platform | cut -d- -f1)
+                    arch=$(echo "$platform" | cut -d- -f1)
                     cp -v "$result"/lib/libsqlite3.so* "lib/libsqlite3-linux-$arch.so" 2>/dev/null || true
                     ;;
                   *-darwin)
-                    arch=$(echo $platform | cut -d- -f1)
+                    arch=$(echo "$platform" | cut -d- -f1)
                     cp -v "$result"/lib/libsqlite3*.dylib "lib/libsqlite3-darwin-$arch.dylib" 2>/dev/null || true
                     ;;
                 esac

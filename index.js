@@ -18,21 +18,40 @@ export function getLibraryPath() {
     return SQLITE_LIB_PATH;
   }
   
-  // Fallback to bundled library search
+  // Detect platform and architecture
+  const platform = process.platform === 'darwin' ? 'darwin' : 'linux';
+  const arch = process.arch === 'arm64' ? 'aarch64' : 'x86_64';
+  const ext = platform === 'darwin' ? 'dylib' : 'so';
+  
   const libDir = resolve(__dirname, 'lib');
-  const candidates = [
-    resolve(libDir, 'libsqlite3.dylib'),      // macOS
-    resolve(libDir, 'libsqlite3.so'),         // Linux
-    resolve(libDir, 'libsqlite3.0.dylib'),    // macOS versioned
+  
+  // Try platform-specific library first
+  const specificLib = resolve(libDir, `libsqlite3-${platform}-${arch}.${ext}`);
+  if (existsSync(specificLib)) {
+    return specificLib;
+  }
+  
+  // Fallback to generic libraries (for development/backwards compatibility)
+  const fallbackCandidates = [
+    resolve(libDir, `libsqlite3.${ext}`),        // Generic for platform
+    resolve(libDir, 'libsqlite3.dylib'),         // macOS generic
+    resolve(libDir, 'libsqlite3.so'),            // Linux generic
+    resolve(libDir, 'libsqlite3.0.dylib'),       // macOS versioned
   ];
   
-  for (const candidate of candidates) {
+  for (const candidate of fallbackCandidates) {
     if (existsSync(candidate)) {
       return candidate;
     }
   }
   
-  throw new Error('SQLite library not found');
+  // Helpful error message
+  const expectedLib = `libsqlite3-${platform}-${arch}.${ext}`;
+  throw new Error(
+    `SQLite library not found for ${platform}/${arch}. ` +
+    `Expected: ${expectedLib}. ` +
+    `Run 'npm run bundle-lib' to build platform-specific libraries.`
+  );
 }
 
 /**
