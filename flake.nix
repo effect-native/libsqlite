@@ -98,15 +98,20 @@
             echo "📦 Copying library for $platform-$arch..."
             case "$ext" in
               so)
-                cp -v result/lib/libsqlite3.so* "lib/libsqlite3-$platform-$arch.so" 2>/dev/null || true
-                # Also copy with generic name for fallback
-                cp -v result/lib/libsqlite3.so* "lib/libsqlite3.so" 2>/dev/null || true
+                # Find and copy the .so file (follow symlinks)
+                so_file=$(find result/lib -name "libsqlite3.so*" -type f | head -n1)
+                if [ -n "$so_file" ]; then
+                  cp -v "$so_file" "lib/libsqlite3-$platform-$arch.so"
+                  cp -v "$so_file" "lib/libsqlite3.so"  # fallback
+                fi
                 ;;
               dylib)
-                # Copy the actual dylib file, not just symlinks
-                cp -v result/lib/libsqlite3*.dylib "lib/libsqlite3-$platform-$arch.dylib" 2>/dev/null || true
-                # Also copy with generic name for fallback  
-                cp -v result/lib/libsqlite3*.dylib "lib/libsqlite3.dylib" 2>/dev/null || true
+                # Find and copy the actual .dylib file (follow symlinks) 
+                dylib_file=$(find result/lib -name "libsqlite3*.dylib" -type f | head -n1)
+                if [ -n "$dylib_file" ]; then
+                  cp -v "$dylib_file" "lib/libsqlite3-$platform-$arch.dylib"
+                  cp -v "$dylib_file" "lib/libsqlite3.dylib"  # fallback
+                fi
                 ;;
             esac
             
