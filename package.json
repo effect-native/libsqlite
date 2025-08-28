@@ -22,11 +22,12 @@
     "get-path": "nix run .#print-path",
     "check": "nix flake check",
     "test": "npm run check",
+    "test:docker": "docker build -t libsqlite-test . && docker run --rm libsqlite-test",
     "sync-version": "tsx scripts/sync-version.ts",
     "build-production": "tsx scripts/build-production.ts",
     "preversion": "npm run sync-version",
     "version": "git add package.json",
-    "prepublishOnly": "npm run build-production"
+    "prepublishOnly": "npm run build-production && npm run test && npm run test:docker"
   },
   "bin": {
     "@effect-native/libsqlite": "./dist/bin/sqlite-lib-path.js",
