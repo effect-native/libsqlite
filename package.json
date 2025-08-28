@@ -69,5 +69,8 @@
     "@effect/platform": "^0.66.3",
     "@effect/platform-bun": "^0.46.0",
     "@types/bun": "latest"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }
