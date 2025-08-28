@@ -415,13 +415,6 @@ const generateProductionPackageJson = Effect.gen(function* () {
       "bin/",
       "README.md",
     ],
-    // Remove dev-only dependencies and scripts
-    dependencies: {},
-    devDependencies: {},
-    scripts: {
-      postinstall:
-        "echo 'SQLite libraries ready! Use: import { pathToSQLite } from @effect-native/libsqlite'",
-    },
   };
 
   yield* fs.writeFileString(
