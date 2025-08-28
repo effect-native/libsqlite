@@ -13,11 +13,6 @@ const SQLITE_LIB_PATH = getSQLiteLibPath();
  * @returns {string} Absolute path to libsqlite3.dylib/.so
  */
 export function getLibraryPath() {
-  // If we have a build-time path and it exists, use it
-  if (SQLITE_LIB_PATH && existsSync(SQLITE_LIB_PATH)) {
-    return SQLITE_LIB_PATH;
-  }
-  
   // Detect platform and architecture
   const platform = process.platform === 'darwin' ? 'darwin' : 'linux';
   const arch = process.arch === 'arm64' ? 'aarch64' : 'x86_64';
@@ -25,10 +20,15 @@ export function getLibraryPath() {
   
   const libDir = resolve(__dirname, 'lib');
   
-  // Try platform-specific library first
+  // Try platform-specific library first (highest priority)
   const specificLib = resolve(libDir, `libsqlite3-${platform}-${arch}.${ext}`);
   if (existsSync(specificLib)) {
     return specificLib;
+  }
+  
+  // If we have a build-time path and it exists, use it as fallback
+  if (SQLITE_LIB_PATH && existsSync(SQLITE_LIB_PATH)) {
+    return SQLITE_LIB_PATH;
   }
   
   // Fallback to generic libraries (for development/backwards compatibility)
