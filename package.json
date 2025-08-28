@@ -22,7 +22,6 @@
     "index.js",
     "index.d.ts",
     "bin/",
-    "scripts/",
     "flake.nix",
     "flake.lock",
     "README.md"
