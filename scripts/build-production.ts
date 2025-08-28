@@ -12,6 +12,7 @@ const projectRoot = path.resolve(__dirname, "..");
 
 interface PlatformTarget {
   readonly nixSystem: string;
+  readonly nixTarget: string;  // Either .#libsqlite3 or pkgsCross.xxx.sqlite.out
   readonly platform: string;
   readonly arch: string;
   readonly extension: string;
@@ -21,6 +22,7 @@ interface PlatformTarget {
 const PLATFORM_TARGETS: ReadonlyArray<PlatformTarget> = [
   {
     nixSystem: "x86_64-linux",
+    nixTarget: "nixpkgs#pkgsCross.gnu64.sqlite.out",
     platform: "linux",
     arch: "x86_64", 
     extension: "so",
@@ -28,6 +30,7 @@ const PLATFORM_TARGETS: ReadonlyArray<PlatformTarget> = [
   },
   {
     nixSystem: "aarch64-linux",
+    nixTarget: "nixpkgs#pkgsCross.aarch64-multiplatform.sqlite.out",
     platform: "linux", 
     arch: "aarch64",
     extension: "so",
@@ -35,6 +38,7 @@ const PLATFORM_TARGETS: ReadonlyArray<PlatformTarget> = [
   },
   {
     nixSystem: "x86_64-darwin",
+    nixTarget: ".#packages.x86_64-darwin.libsqlite3",
     platform: "darwin",
     arch: "x86_64",
     extension: "dylib", 
@@ -42,6 +46,7 @@ const PLATFORM_TARGETS: ReadonlyArray<PlatformTarget> = [
   },
   {
     nixSystem: "aarch64-darwin",
+    nixTarget: ".#packages.aarch64-darwin.libsqlite3", 
     platform: "darwin",
     arch: "aarch64", 
     extension: "dylib",
@@ -92,48 +97,21 @@ const cleanBuildDir = Effect.gen(function* () {
 const buildPlatformLibrary = (target: PlatformTarget) => Effect.gen(function* () {
   yield* Console.log(`📦 Building ${target.description} (${target.nixSystem})...`)
   
-  // Try to build for this platform with more aggressive options
-  const buildResult = yield* Command.make(
-    "nix", 
-    "build", 
-    `--system`, target.nixSystem,
-    "--extra-platforms", target.nixSystem, // Allow building for this platform
-    "--builders-use-substitutes", "true",   // Use binary cache if available
-    ".#libsqlite3", 
-    "--no-link"
-  ).pipe(
+  // Build using the appropriate nix target (pkgsCross for Linux, local flake for Darwin)
+  const buildResult = yield* Command.make("nix", "build", target.nixTarget, "--no-link").pipe(
     Command.exitCode,
-    Effect.mapError(() => `Failed to build for ${target.nixSystem}`)
+    Effect.mapError(() => `Failed to build ${target.nixTarget}`)
   )
   
   if (buildResult !== 0) {
-    // Try one more time with fallback to binary cache
-    yield* Console.log(`⚡ Trying binary cache for ${target.nixSystem}...`)
-    
-    const fallbackResult = yield* Command.make(
-      "nix", 
-      "build", 
-      `--system`, target.nixSystem,
-      "--option", "builders", "@/etc/nix/machines",  // Use remote builders if configured
-      "--option", "max-jobs", "0",                   // Only use remote builders
-      "--fallback",                                  // Fall back to building if needed
-      ".#libsqlite3", 
-      "--no-link"
-    ).pipe(
-      Command.exitCode,
-      Effect.catchAll(() => Effect.succeed(1)) // Don't fail the whole build
-    )
-    
-    if (fallbackResult !== 0) {
-      yield* Console.log(`❌ Failed to build ${target.nixSystem} - will be missing from package`)
-      return null
-    }
+    yield* Console.log(`❌ Failed to build ${target.nixSystem} - will be missing from package`)
+    return null
   }
   
-  // Get the store path
-  const storePath = yield* Command.make("nix", "eval", `--system`, target.nixSystem, ".#libsqlite3", "--raw").pipe(
+  // Get the store path  
+  const storePath = yield* Command.make("nix", "eval", target.nixTarget, "--raw").pipe(
     Command.string,
-    Effect.mapError(() => `Failed to get store path for ${target.nixSystem}`)
+    Effect.mapError(() => `Failed to get store path for ${target.nixTarget}`)
   )
   
   const fs = yield* FileSystem.FileSystem
