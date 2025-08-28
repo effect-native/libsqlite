@@ -9,6 +9,7 @@ import { fileURLToPath } from "node:url";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const projectRoot = path.resolve(__dirname, "..");
+const js = String.raw;
 
 interface PlatformTarget {
   readonly nixSystem: string;
@@ -222,7 +223,7 @@ const generateOptimizedIndex = (builtLibraries: Array<any>) =>
     yield* Console.log("📝 Generating optimized index.js for production...");
 
     const fs = yield* FileSystem.FileSystem;
-    const js = String.raw;
+
     const indexContent = js`import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
 import { existsSync } from 'node:fs';
@@ -295,7 +296,7 @@ export default pathToSQLite;
     yield* fs.writeFileString("dist/index.js", indexContent);
 
     // Generate TypeScript definitions
-    const dtsContent = `/**
+    const dtsContent = js`/**
  * Get the absolute path to the bundled libsqlite3 shared library
  * @returns Absolute path to libsqlite3.dylib/.so
  */
@@ -311,7 +312,7 @@ export default _default;
     yield* fs.writeFileString("dist/index.d.ts", dtsContent);
 
     // Generate React Native specific entry point
-    const reactNativeContent = `// React Native specific entry point
+    const reactNativeContent = js`// React Native specific entry point
 // SQLite libraries don't work in React Native - use react-native-sqlite-storage or expo-sqlite
 
 /**
@@ -324,12 +325,11 @@ export default _default;
  */
 export const pathToSQLite = (() => {
   throw new Error(
-    '🚫 @effect-native/libsqlite is for Node.js server environments only.\\n\\n' +
-    '📱 For React Native, use one of these instead:\\n' +
-    '  • expo-sqlite: https://docs.expo.dev/versions/latest/sdk/sqlite/\\n' +
-    '  • react-native-sqlite-storage: https://github.com/andpor/react-native-sqlite-storage\\n' +
-    '  • react-native-sqlite-2: https://github.com/noradaiko/react-native-sqlite-2\\n\\n' +
-    '💡 This package provides native SQLite binaries for Node.js servers, not mobile apps.'
+    '🚫 @effect-native/libsqlite is for Node.js / Bun server environments only.\n\n' +
+    '📱 For React Native, use one of these instead:\n' +
+    '  • @op-engineering/op-sqlite: https://www.npmjs.com/package/@op-engineering/op-sqlite\n' +
+    '  • expo-sqlite: https://docs.expo.dev/versions/latest/sdk/sqlite/\n' +
+    '💡 This package provides native SQLite binaries for Node.js / Bun servers, not mobile apps.'
   );
 })();
 
@@ -339,7 +339,7 @@ export default pathToSQLite;
     yield* fs.writeFileString("dist/react-native.js", reactNativeContent);
 
     // TypeScript definitions for React Native
-    const reactNativeDtsContent = `/**
+    const reactNativeDtsContent = js`/**
  * React Native placeholder for getLibraryPath
  * @throws Always throws with helpful message for React Native users
  */
@@ -357,7 +357,7 @@ const generateOptimizedBin = Effect.gen(function* () {
   const fs = yield* FileSystem.FileSystem;
   yield* fs.makeDirectory("dist/bin", { recursive: true });
 
-  const binContent = `#!/usr/bin/env node
+  const binContent = js`#!/usr/bin/env node
 
 import { pathToSQLite } from '../index.js';
 
