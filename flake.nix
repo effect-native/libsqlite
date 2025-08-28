@@ -39,7 +39,7 @@
           text = ''
             set -euo pipefail
             dir='${libOnly}/lib'
-            candidate=$(ls -1 "$dir"/libsqlite3*.dylib "$dir"/libsqlite3*.so* 2>/dev/null | head -n1)
+            candidate=$(find "$dir" -name "libsqlite3*.dylib" -o -name "libsqlite3*.so*" 2>/dev/null | head -n1)
             [ -n "''${candidate:-}" ] || { echo "libsqlite3 not found" >&2; exit 1; }
             echo "$candidate"
           '';
