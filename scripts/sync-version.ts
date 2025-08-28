@@ -36,15 +36,24 @@ const updatePackageVersion = (sqliteVersion: string) =>
     const packageJsonContent = yield* fs.readFileString(packageJsonPath);
     const packageJson: PackageJson = JSON.parse(packageJsonContent);
 
-    const newVersion = sqliteVersion;
-
-    if (packageJson.version === newVersion) {
-      yield* Console.log(`✅ Version already up-to-date: ${newVersion}`);
+    const currentVersion = packageJson.version;
+    
+    // Parse current version to check if it already matches SQLite version
+    const [currentBase, currentSuffix] = currentVersion.includes('-') 
+      ? currentVersion.split('-', 2)
+      : [currentVersion, null];
+    
+    // If SQLite base version matches, keep the current version (including any suffix)
+    if (currentBase === sqliteVersion) {
+      yield* Console.log(`✅ SQLite version matches (${currentBase}), keeping current version: ${currentVersion}`);
       return false;
     }
+    
+    // If SQLite version changed, update to new base version (no suffix)
+    const newVersion = sqliteVersion;
 
     yield* Console.log(
-      `📦 Updating version: ${packageJson.version} → ${newVersion}`,
+      `📦 Updating to new SQLite version: ${currentVersion} → ${newVersion}`,
     );
     packageJson.version = newVersion;
 
