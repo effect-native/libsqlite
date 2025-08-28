@@ -7,7 +7,7 @@
   "type": "module",
   "scripts": {
     "build": "nix build .#libsqlite3",
-    "bundle-lib": "nix build .#libsqlite3 && mkdir -p lib && cp -a result/lib/* lib/",
+    "bundle-lib": "nix run .#build-all-platforms",
     "get-path": "nix run .#print-path",
     "check": "nix flake check",
     "test": "npm run check",

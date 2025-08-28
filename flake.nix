@@ -53,6 +53,46 @@
           '';
         };
 
+        # App: builds libraries for all platforms
+        buildAllPlatforms = pkgs.writeShellApplication {
+          name = "build-all-platforms";
+          text = ''
+            set -euo pipefail
+            echo "🔨 Building SQLite libraries for all platforms..."
+            
+            platforms=(
+              "x86_64-linux"
+              "aarch64-linux" 
+              "x86_64-darwin"
+              "aarch64-darwin"
+            )
+            
+            mkdir -p lib
+            
+            for platform in "''${platforms[@]}"; do
+              echo "📦 Building for $platform..."
+              if nix build ".#packages.$platform.libsqlite3" --no-link 2>/dev/null; then
+                result=$(nix eval ".#packages.$platform.libsqlite3" --raw)
+                case $platform in
+                  *-linux)
+                    arch=$(echo $platform | cut -d- -f1)
+                    cp -v "$result"/lib/libsqlite3.so* "lib/libsqlite3-linux-$arch.so" 2>/dev/null || true
+                    ;;
+                  *-darwin)
+                    arch=$(echo $platform | cut -d- -f1)
+                    cp -v "$result"/lib/libsqlite3*.dylib "lib/libsqlite3-darwin-$arch.dylib" 2>/dev/null || true
+                    ;;
+                esac
+              else
+                echo "⚠️  Failed to build for $platform (may not be available)"
+              fi
+            done
+            
+            echo "✅ Multi-platform build complete:"
+            ls -la lib/libsqlite3-*
+          '';
+        };
+
         # CI check: ensure NOT compiled with OMIT_LOAD_EXTENSION
         checkExt = pkgs.runCommand "check-sqlite-ext" { } ''
           ${sqlite}/bin/sqlite3 :memory: \
@@ -66,6 +106,7 @@
         packages.libsqlite3 = libOnly;
         apps."print-path" = { type = "app"; program = "${printPath}/bin/sqlite-lib-path"; };
         apps."print-version" = { type = "app"; program = "${printVersion}/bin/sqlite-version"; };
+        apps."build-all-platforms" = { type = "app"; program = "${buildAllPlatforms}/bin/build-all-platforms"; };
         checks.loadableExtensions = checkExt;
         devShells.default = pkgs.mkShell { packages = [ sqlite ]; };
       });
