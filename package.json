@@ -10,12 +10,13 @@
     "get-path": "nix run .#print-path",
     "check": "nix flake check",
     "test": "npm run check",
-    "sync-version": "node scripts/sync-version.js",
+    "sync-version": "tsx scripts/sync-version.ts",
     "preversion": "npm run sync-version",
     "version": "git add package.json"
   },
   "bin": {
-    "sqlite-lib-path": "./bin/sqlite-lib-path.js"
+    "@effect-native/libsqlite": "./bin/sqlite-lib-path.ts",
+    "sqlite-lib-path": "./bin/sqlite-lib-path.ts"
   },
   "files": [
     "index.js",
@@ -45,6 +46,14 @@
     "node": ">=16.0.0"
   },
   "peerDependencies": {},
-  "dependencies": {},
-  "devDependencies": {}
+  "dependencies": {
+    "effect": "^3.10.0",
+    "@effect/platform": "^0.66.3"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.2",
+    "tsx": "^4.19.2",
+    "@types/node": "^22.0.0",
+    "@effect/platform-bun": "^0.46.0"
+  }
 }
