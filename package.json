@@ -1,0 +1,46 @@
+{
+  "name": "libsqlite3-pure-nix",
+  "version": "1.0.0",
+  "description": "Pure-Nix libsqlite3 (.dylib/.so) for extension loading",
+  "main": "index.js",
+  "types": "index.d.ts",
+  "type": "module",
+  "scripts": {
+    "build": "nix build .#libsqlite3",
+    "get-path": "nix run .#print-path",
+    "check": "nix flake check",
+    "test": "npm run check"
+  },
+  "bin": {
+    "sqlite-lib-path": "./bin/sqlite-lib-path.js"
+  },
+  "files": [
+    "index.js",
+    "index.d.ts",
+    "bin/",
+    "flake.nix",
+    "flake.lock",
+    "README.md"
+  ],
+  "keywords": [
+    "sqlite",
+    "sqlite3",
+    "libsqlite3",
+    "nix",
+    "extension",
+    "dylib",
+    "shared-library"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/libsqlite3-pure-nix.git"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "peerDependencies": {},
+  "dependencies": {},
+  "devDependencies": {}
+}
