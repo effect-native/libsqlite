@@ -45,6 +45,14 @@
           '';
         };
 
+        # App: prints the SQLite version
+        printVersion = pkgs.writeShellApplication {
+          name = "sqlite-version";
+          text = ''
+            echo "${sqlite.version}"
+          '';
+        };
+
         # CI check: ensure NOT compiled with OMIT_LOAD_EXTENSION
         checkExt = pkgs.runCommand "check-sqlite-ext" { } ''
           ${sqlite}/bin/sqlite3 :memory: \
@@ -57,6 +65,7 @@
       in {
         packages.libsqlite3 = libOnly;
         apps."print-path" = { type = "app"; program = "${printPath}/bin/sqlite-lib-path"; };
+        apps."print-version" = { type = "app"; program = "${printVersion}/bin/sqlite-version"; };
         checks.loadableExtensions = checkExt;
         devShells.default = pkgs.mkShell { packages = [ sqlite ]; };
       });

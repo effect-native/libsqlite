@@ -9,7 +9,10 @@
     "build": "nix build .#libsqlite3",
     "get-path": "nix run .#print-path",
     "check": "nix flake check",
-    "test": "npm run check"
+    "test": "npm run check",
+    "sync-version": "node scripts/sync-version.js",
+    "preversion": "npm run sync-version",
+    "version": "git add package.json"
   },
   "bin": {
     "sqlite-lib-path": "./bin/sqlite-lib-path.js"
@@ -18,6 +21,7 @@
     "index.js",
     "index.d.ts",
     "bin/",
+    "scripts/",
     "flake.nix",
     "flake.lock",
     "README.md"
