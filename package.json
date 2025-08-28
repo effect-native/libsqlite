@@ -40,7 +40,7 @@
     "dylib",
     "shared-library"
   ],
-  "author": "Your Name",
+  "author": "Tom Aylott",
   "license": "MIT",
   "repository": {
     "type": "git",
