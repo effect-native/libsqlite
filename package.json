@@ -12,9 +12,10 @@
     "check": "nix flake check",
     "test": "npm run check",
     "sync-version": "tsx scripts/sync-version.ts",
+    "build-production": "tsx scripts/build-production.ts",
     "preversion": "npm run sync-version",
     "version": "git add package.json",
-    "prepublishOnly": "npm run bundle-lib"
+    "prepublishOnly": "npm run build-production"
   },
   "bin": {
     "@effect-native/libsqlite": "./bin/sqlite-lib-path.ts",
