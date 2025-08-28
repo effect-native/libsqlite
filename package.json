@@ -1,9 +1,9 @@
 {
   "name": "@effect-native/libsqlite",
-  "version": "3.50.2",
+  "version": "3.50.3",
   "description": "Pure-Nix libsqlite3 (.dylib/.so) for extension loading",
   "main": "dist/index.js",
-  "types": "dist/index.d.ts", 
+  "types": "dist/index.d.ts",
   "type": "module",
   "exports": {
     ".": {
@@ -11,7 +11,7 @@
       "default": "./dist/index.js"
     },
     "./react-native": {
-      "import": "./dist/react-native.js", 
+      "import": "./dist/react-native.js",
       "types": "./dist/react-native.d.ts"
     },
     "./package.json": "./package.json"
@@ -36,7 +36,7 @@
   },
   "files": [
     "dist/index.js",
-    "dist/index.d.ts", 
+    "dist/index.d.ts",
     "dist/react-native.js",
     "dist/react-native.d.ts",
     "dist/lib/",
