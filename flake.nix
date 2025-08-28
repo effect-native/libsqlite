@@ -16,8 +16,10 @@
         libOnly = pkgs.stdenv.mkDerivation {
           pname = "libsqlite3";
           version = sqlite.version;
+          src = pkgs.writeText "dummy" "";
           dontConfigure = true;
           dontBuild = true;
+          dontUnpack = true;
           installPhase = ''
             mkdir -p $out/lib
             # copy shared libs (dylib on darwin, so* on linux), keep symlinks
