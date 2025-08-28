@@ -24,9 +24,18 @@ npm install @effect-native/libsqlite
 ```
 
 ```js
+// Hip API - for use with Database.setCustomSQLite()
+import { pathToSQLite } from '@effect-native/libsqlite'
+Database.setCustomSQLite(pathToSQLite)
+
+// Function API
 import { getLibraryPath } from '@effect-native/libsqlite'
 const lib = getLibraryPath()
-// Database.setCustomSQLite(lib)
+Database.setCustomSQLite(lib)
+
+// Default export
+import getPath from '@effect-native/libsqlite'
+Database.setCustomSQLite(getPath())
 ```
 
 ## Direct Nix Usage

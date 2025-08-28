@@ -4,4 +4,9 @@
  */
 export declare function getLibraryPath(): string;
 
+/**
+ * Hip alias for getLibraryPath() - for use with Database.setCustomSQLite()
+ */
+export declare const pathToSQLite: string;
+
 export default getLibraryPath;

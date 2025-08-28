@@ -35,4 +35,10 @@ export function getLibraryPath() {
   throw new Error('SQLite library not found');
 }
 
+/**
+ * Hip alias for getLibraryPath() - for use with Database.setCustomSQLite()
+ * @returns {string} Absolute path to libsqlite3.dylib/.so
+ */
+export const pathToSQLite = getLibraryPath();
+
 export default getLibraryPath;
