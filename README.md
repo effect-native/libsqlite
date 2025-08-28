@@ -53,6 +53,17 @@ const lib = execFileSync('nix', ['run', '.#print-path'], { encoding: 'utf8' }).t
   nix run github:effect-native/libsqlite#print-path
   ```
 
+## Automatic Versioning
+
+The package version automatically syncs with the SQLite version from nixpkgs-unstable:
+
+```bash
+npm run sync-version  # Updates package.json to match SQLite version
+nix run .#print-version  # Shows current SQLite version
+```
+
+Pre-release suffixes are preserved (e.g., `3.50.2-beta.1` stays as `3.50.2-beta.1`).
+
 ## Gotchas
 - If your host app is hardened on macOS, still ensure entitlements/signing allow loading external dylibs. (This is OS-level, not solved by which SQLite you ship.)
 - `@vlcn.io/crsqlite` will load fine as long as the host enables extension loading at runtime.
