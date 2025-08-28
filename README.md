@@ -1,7 +1,10 @@
 # @effect-native/libsqlite
 
-Builds a fresh `libsqlite3` (`.dylib` on macOS, `.so` on Linux) from nixpkgs-unstable.
-Useful when system SQLite can't load extensions.
+**Universal SQLite library that Just Works™ everywhere.** 
+
+Bundles fresh `libsqlite3` binaries for all platforms from nixpkgs-unstable. Automatically detects your environment and uses the right library. Perfect when system SQLite can't load extensions.
+
+🚀 **Supports:** macOS (Intel + Apple Silicon), Linux (x86_64 + ARM64), Docker, Vercel, AWS Lambda, Raspberry Pi
 
 ## Build
 
@@ -26,17 +29,24 @@ npm install @effect-native/libsqlite
 ```js
 // Hip API - for use with Database.setCustomSQLite()
 import { pathToSQLite } from '@effect-native/libsqlite'
-Database.setCustomSQLite(pathToSQLite)
+Database.setCustomSQLite(pathToSQLite)  // Just Works™ on any platform
 
 // Function API
 import { getLibraryPath } from '@effect-native/libsqlite'
-const lib = getLibraryPath()
+const lib = getLibraryPath()  // Automatically detects Mac/Linux/ARM/Intel
 Database.setCustomSQLite(lib)
 
 // Default export
 import getPath from '@effect-native/libsqlite'
 Database.setCustomSQLite(getPath())
 ```
+
+### ✨ What makes it special:
+- **Zero configuration** - Works on Mac, Linux, Pi, Docker without any setup
+- **Insanely fast** - Pre-built binaries, no compilation needed  
+- **Tiny API** - Just import and use, platform detection is automatic
+- **Extension ready** - Built with extension loading enabled (unlike system SQLite)
+- **React Native safe** - Throws helpful error if imported in RN
 
 ## Direct Nix Usage
 
@@ -62,16 +72,17 @@ const lib = execFileSync('nix', ['run', '.#print-path'], { encoding: 'utf8' }).t
   nix run github:effect-native/libsqlite#print-path
   ```
 
-## Automatic Versioning
+## Package Details
 
-The package version automatically syncs with the stable SQLite version from nixpkgs-unstable:
+- **Size:** ~7MB (includes binaries for all platforms)
+- **Platforms:** macOS (Intel + Apple Silicon), Linux (x86_64 + ARM64)  
+- **Dependencies:** Zero runtime dependencies
+- **Version:** Automatically syncs with latest stable SQLite from nixpkgs
 
 ```bash
 npm run sync-version  # Updates package.json to match SQLite version
 nix run .#print-version  # Shows current SQLite version
 ```
-
-The package always tracks the latest stable SQLite release.
 
 ## Gotchas
 - If your host app is hardened on macOS, still ensure entitlements/signing allow loading external dylibs. (This is OS-level, not solved by which SQLite you ship.)
