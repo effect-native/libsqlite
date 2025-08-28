@@ -358,10 +358,10 @@ const generateOptimizedBin = Effect.gen(function* () {
   
   const binContent = `#!/usr/bin/env node
 
-import { getLibraryPath } from '../index.js';
+import { pathToSQLite } from '../index.js';
 
 try {
-  console.log(getLibraryPath());
+  console.log(pathToSQLite);
 } catch (error) {
   console.error(error.message);
   process.exit(1);
