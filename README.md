@@ -1,4 +1,4 @@
-# libsqlite3-pure-nix
+# @effect-native/libsqlite
 
 Builds a fresh `libsqlite3` (`.dylib` on macOS, `.so` on Linux) from nixpkgs-unstable.
 Useful when system SQLite can't load extensions.
@@ -17,7 +17,19 @@ nix run .#print-path
 # -> /nix/store/.../lib/libsqlite3.dylib  (or .so)
 ```
 
-## Programmatic example (Node)
+## npm Usage
+
+```bash
+npm install @effect-native/libsqlite
+```
+
+```js
+import { getLibraryPath } from '@effect-native/libsqlite'
+const lib = getLibraryPath()
+// Database.setCustomSQLite(lib)
+```
+
+## Direct Nix Usage
 
 ```js
 import { execFileSync } from 'node:child_process'
@@ -33,12 +45,12 @@ const lib = execFileSync('nix', ['run', '.#print-path'], { encoding: 'utf8' }).t
 
 - Build just the lib:
   ```sh
-  nix build github:<you>/libsqlite3-pure-nix#libsqlite3
+  nix build github:effect-native/libsqlite#libsqlite3
   ```
 
 - Get the path (great for wiring into scripts/CI):
   ```sh
-  nix run github:<you>/libsqlite3-pure-nix#print-path
+  nix run github:effect-native/libsqlite#print-path
   ```
 
 ## Gotchas

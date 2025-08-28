@@ -1,5 +1,5 @@
 {
-  "name": "libsqlite3-pure-nix",
+  "name": "@effect-native/libsqlite",
   "version": "1.0.0",
   "description": "Pure-Nix libsqlite3 (.dylib/.so) for extension loading",
   "main": "index.js",
@@ -35,7 +35,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/yourusername/libsqlite3-pure-nix.git"
+    "url": "https://github.com/effect-native/libsqlite.git"
   },
   "engines": {
     "node": ">=16.0.0"
