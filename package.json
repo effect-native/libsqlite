@@ -57,6 +57,8 @@
     "@types/node": "^22.0.0",
     "effect": "^3.10.0",
     "@effect/platform": "^0.66.3",
-    "@effect/platform-bun": "^0.46.0"
-  }
+    "@effect/platform-bun": "^0.46.0",
+    "@types/bun": "latest"
+  },
+  "private": true
 }
