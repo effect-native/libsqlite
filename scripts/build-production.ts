@@ -252,14 +252,14 @@ export function getLibraryPath() {
   const libDir = resolve(__dirname, 'lib');
 
   // Try platform-specific library first (highest priority)
-  const specificLib = resolve(libDir, \`libsqlite3-\${platform}-\${arch}.\${ext}\`);
+  const specificLib = resolve(libDir, \`libsqlite3-\$\{platform\}-\$\{arch\}.\$\{ext\}\`);
   if (existsSync(specificLib)) {
     return specificLib;
   }
 
   // Fallback to any available library for the current platform
   const fallbackCandidates = [
-    resolve(libDir, \`libsqlite3.\${ext}\`),        // Generic for platform
+    resolve(libDir, \`libsqlite3.\$\{ext\}\`),        // Generic for platform
     resolve(libDir, 'libsqlite3.dylib'),         // macOS generic
     resolve(libDir, 'libsqlite3.so'),            // Linux generic
   ];
@@ -272,11 +272,11 @@ export function getLibraryPath() {
 
   // Helpful error message with available platforms
   const availablePlatforms = ${JSON.stringify(builtLibraries.map((b) => `${b.target.platform}-${b.target.arch}`))};
-  const expectedLib = \`libsqlite3-\${platform}-\${arch}.\${ext}\`;
+  const expectedLib = \`libsqlite3-\$\{platform\}-\$\{arch\}.\$\{ext\}\`;
   throw new Error(
-    \`SQLite library not found for \${platform}/\${arch}. \` +
-    \`Expected: \${expectedLib}. \` +
-    \`Available platforms: \${availablePlatforms.join(', ')}. \` +
+    \`SQLite library not found for \$\{platform\}/\$\{arch\}. \` +
+    \`Expected: \$\{expectedLib\}. \` +
+    \`Available platforms: \$\{availablePlatforms.join(', ')\}. \` +
     \`This package supports: ${PLATFORM_TARGETS.map((t) => t.description).join(", ")}\`
   );
 }
