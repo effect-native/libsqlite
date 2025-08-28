@@ -67,8 +67,8 @@ const main = Effect.gen(function* () {
 });
 
 // Run when called directly - lazy import Bun platform
-if (import.meta.url === `file://${process.argv[1]}`) {
-  const { BunContext, BunRuntime } = await import("@effect/platform-bun")
-  const program = main.pipe(Effect.provide(BunContext.layer))
-  BunRuntime.runMain(program)
+if (import.meta.main) {
+  const { BunContext, BunRuntime } = await import("@effect/platform-bun");
+  const program = main.pipe(Effect.provide(BunContext.layer));
+  BunRuntime.runMain(program);
 }

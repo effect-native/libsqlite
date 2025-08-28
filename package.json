@@ -7,12 +7,14 @@
   "type": "module",
   "scripts": {
     "build": "nix build .#libsqlite3",
+    "bundle-lib": "nix build .#libsqlite3 && mkdir -p lib && cp -a result/lib/* lib/",
     "get-path": "nix run .#print-path",
     "check": "nix flake check",
     "test": "npm run check",
     "sync-version": "tsx scripts/sync-version.ts",
     "preversion": "npm run sync-version",
-    "version": "git add package.json"
+    "version": "git add package.json",
+    "prepublishOnly": "npm run bundle-lib"
   },
   "bin": {
     "@effect-native/libsqlite": "./bin/sqlite-lib-path.ts",
@@ -21,6 +23,8 @@
   "files": [
     "index.js",
     "index.d.ts",
+    "build-macros.ts",
+    "lib/",
     "bin/",
     "flake.nix",
     "flake.lock",
